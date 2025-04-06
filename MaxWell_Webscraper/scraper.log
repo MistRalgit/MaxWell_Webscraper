@@ -1,0 +1,11 @@
+2025-04-06 16:25:48,565 - scraper.views - INFO - ログファイルがクリアされました
+2025-04-06 16:25:48,579 - scraper.views - ERROR - ログ取得中にエラーが発生: type object 'datetime.datetime' has no attribute 'datetime'
+Traceback (most recent call last):
+  File "C:\Users\MistRal\Desktop\Python\App\Webs4\MaxWell_Webscraper\scraper\views.py", line 1039, in get_logs
+    last_modified = datetime.datetime.fromtimestamp(
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'
+2025-04-06 16:25:49,282 - scraper.views - ERROR - ログ取得中にエラーが発生: type object 'datetime.datetime' has no attribute 'datetime'
+Traceback (most recent call last):
+  File "C:\Users\MistRal\Desktop\Python\App\Webs4\MaxWell_Webscraper\scraper\views.py", line 1039, in get_logs
+    last_modified = datetime.datetime.fromtimestamp(
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'

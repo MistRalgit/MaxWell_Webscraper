@@ -1,0 +1,1761 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxWell Webscraper</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --primary-color: #ff8700;
+            --secondary-color: #364f6b;
+            --accent-color: #fc5185;
+            --border-color: #333;
+            --hover-color: #2a2a2a;
+            --input-bg: #2c2c2c;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --menu-active-bg: rgba(255, 135, 0, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            grid-gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: 95vh;
+        }
+        
+        .panel {
+            background-color: rgba(40, 40, 40, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        
+        .nav-menu {
+            background-color: rgba(40, 40, 40, 0.7);
+            border-radius: 8px;
+            padding: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        
+        .nav-menu h2 {
+            padding: 15px;
+            margin: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-menu ul {
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-menu li:last-child {
+            border-bottom: none;
+        }
+        
+        .nav-menu a {
+            display: block;
+            padding: 15px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-menu a:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .nav-menu a.active {
+            background-color: var(--menu-active-bg);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .content-panel {
+            display: none;
+        }
+        
+        .content-panel.active {
+            display: block;
+        }
+        
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 135, 0, 0.3);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #d97300;
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #273a4d;
+        }
+        
+        button.danger {
+            background-color: var(--error-color);
+        }
+        
+        button.danger:hover {
+            background-color: #bd2130;
+        }
+        
+        .results-area {
+            overflow: auto;
+            max-height: 70vh;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(40, 40, 40, 0.5);
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        tr:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.2);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+        
+        .selector-test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed var(--border-color);
+            background-color: rgba(60, 60, 60, 0.5);
+            max-height: 200px;
+            overflow: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                margin-bottom: 20px;
+            }
+            
+            .nav-menu ul {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            
+            .nav-menu li {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+            }
+            
+            .nav-menu a {
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>MaxWell Webscraper</h1>
+    
+    <div class="container">
+        <!-- 左側ナビゲーションメニュー -->
+        <div class="nav-menu">
+            <h2>メニュー</h2>
+            <ul>
+                <li><a href="#" class="menu-link active" data-target="scraping-settings">スクレイピング設定</a></li>
+                <li><a href="#" class="menu-link" data-target="scraping-results">スクレイピング結果</a></li>
+                <li><a href="#" class="menu-link" data-target="saved-data">保存データ</a></li>
+                <li><a href="#" class="menu-link" data-target="save-load-config">設定の保存・読込</a></li>
+                <li><a href="#" class="menu-link" data-target="export-settings">エクスポート設定</a></li>
+                <li><a href="#" class="menu-link" data-target="log-viewer">ログ表示</a></li>
+                <li><a href="#" class="menu-link" data-target="help">ヘルプ</a></li>
+            </ul>
+        </div>
+        
+        <!-- メインコンテンツエリア -->
+        <div class="panel">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- スクレイピング設定 -->
+            <div id="scraping-settings" class="content-panel active">
+                <h2>スクレイピング設定</h2>
+                
+                <form id="scraper-form" method="post" action="{% url 'scraper:scrape' %}">
+                    {% csrf_token %}
+                    
+                    <label for="url">対象URL:</label>
+                    <input type="url" id="url" name="url" placeholder="https://example.com" required>
+                    <p class="help-text">スクレイピングするWebサイトのURLを入力してください</p>
+                    
+                    <label for="selector">CSSセレクタ:</label>
+                    <input type="text" id="selector" name="selector" placeholder=".product-item" required>
+                    <p class="help-text">データを抽出するHTML要素のCSSセレクタ</p>
+                    
+                    <button type="button" id="test-selector" class="secondary">セレクタをテスト</button>
+                    <div id="selector-test-result" class="selector-test-result" style="display: none;"></div>
+                    
+                    <label for="login_required">ログインが必要:</label>
+                    <select id="login_required" name="login_required">
+                        <option value="no">いいえ</option>
+                        <option value="yes">はい</option>
+                    </select>
+                    
+                    <div id="login-fields" style="display: none;">
+                        <label for="username_selector">ユーザー名セレクタ:</label>
+                        <input type="text" id="username_selector" name="username_selector" placeholder="#username">
+                        
+                        <label for="password_selector">パスワードセレクタ:</label>
+                        <input type="text" id="password_selector" name="password_selector" placeholder="#password">
+                        
+                        <label for="login_button_selector">ログインボタンセレクタ:</label>
+                        <input type="text" id="login_button_selector" name="login_button_selector" placeholder=".login-btn">
+                        
+                        <label for="username">ユーザー名:</label>
+                        <input type="text" id="username" name="username">
+                        
+                        <label for="password">パスワード:</label>
+                        <input type="password" id="password" name="password">
+                    </div>
+                    
+                    <label for="pagination">ページネーション:</label>
+                    <select id="pagination" name="pagination">
+                        <option value="no">ページネーションなし</option>
+                        <option value="yes">ページネーションあり</option>
+                    </select>
+                    
+                    <div id="pagination-fields" style="display: none;">
+                        <label for="next_page_selector">次ページセレクタ:</label>
+                        <input type="text" id="next_page_selector" name="next_page_selector" placeholder=".next-page">
+                        
+                        <label for="max_pages">最大ページ数:</label>
+                        <input type="number" id="max_pages" name="max_pages" min="1" value="5">
+                    </div>
+                    
+                    <label for="download_images">画像をダウンロード:</label>
+                    <select id="download_images" name="download_images">
+                        <option value="no">いいえ</option>
+                        <option value="yes">はい</option>
+                    </select>
+                    
+                    <div id="image-fields" style="display: none;">
+                        <label for="image_selector">画像セレクタ:</label>
+                        <input type="text" id="image_selector" name="image_selector" placeholder="img">
+                    </div>
+                    
+                    <label for="download_videos">動画をダウンロード:</label>
+                    <select id="download_videos" name="download_videos">
+                        <option value="no">いいえ</option>
+                        <option value="yes">はい</option>
+                    </select>
+                    
+                    <div id="video-fields" style="display: none;">
+                        <label for="video_selector">動画セレクタ:</label>
+                        <input type="text" id="video_selector" name="video_selector" placeholder="video, iframe">
+                        <p class="help-text">video要素、iframe、またはsource要素などを指定できます</p>
+                    </div>
+                    
+                    <label for="follow_links">リンク先を参照:</label>
+                    <select id="follow_links" name="follow_links">
+                        <option value="no">いいえ</option>
+                        <option value="yes">はい</option>
+                    </select>
+                    <p class="help-text">スクレイピングしたデータ内のリンク先も自動的に参照します</p>
+                    
+                    <div id="link-fields" style="display: none;">
+                        <label for="link_depth">リンク深さ:</label>
+                        <input type="number" id="link_depth" name="link_depth" min="1" max="3" value="1">
+                        <p class="help-text">リンクを辿る最大深さ（1〜3の範囲を推奨）</p>
+                    </div>
+                    
+                    <button type="submit">スクレイピング開始</button>
+                    <button type="reset" class="danger">リセット</button>
+                </form>
+            </div>
+            
+            <!-- スクレイピング結果 -->
+            <div id="scraping-results" class="content-panel">
+                <h2>スクレイピング結果</h2>
+                
+                <div id="loading" class="loading">データをスクレイピング中です</div>
+                
+                <div class="results-area">
+                    {% if results %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    {% for header in headers %}
+                                        <th>{{ header }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in results %}
+                                    <tr>
+                                        {% for cell in row %}
+                                            <td>{{ cell }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>まだデータがありません。スクレイピングを開始してください。</p>
+                    {% endif %}
+                </div>
+                
+                {% if results %}
+                    <div class="export-options-panel" style="margin-top: 20px; padding: 15px; background-color: rgba(50, 50, 50, 0.7); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <h3>データエクスポート設定</h3>
+                        
+                        <form method="post" action="{% url 'scraper:export_csv' %}" id="export-form">
+                            {% csrf_token %}
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
+                                <div>
+                                    <label for="export_format">エクスポート形式:</label>
+                                    <select id="export_format" name="export_format">
+                                        <option value="csv">CSV</option>
+                                        <option value="excel">Excel (.xlsx)</option>
+                                        <option value="json">JSON</option>
+                                    </select>
+                                    
+                                    <label for="csv_delimiter">区切り文字 (CSV):</label>
+                                    <select id="csv_delimiter" name="csv_delimiter">
+                                        <option value="comma">カンマ (,)</option>
+                                        <option value="tab">タブ</option>
+                                        <option value="semicolon">セミコロン (;)</option>
+                                    </select>
+                                    
+                                    <label for="csv_encoding">エンコーディング:</label>
+                                    <select id="csv_encoding" name="csv_encoding">
+                                        <option value="utf-8">UTF-8</option>
+                                        <option value="shift-jis">Shift-JIS</option>
+                                        <option value="euc-jp">EUC-JP</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="include_headers">ヘッダーを含める:</label>
+                                    <select id="include_headers" name="include_headers">
+                                        <option value="yes">はい</option>
+                                        <option value="no">いいえ</option>
+                                    </select>
+                                    
+                                    <label for="export_filename">ファイル名:</label>
+                                    <input type="text" id="export_filename" name="export_filename" placeholder="scraping_results" value="scraping_results">
+                                    <p class="help-text">拡張子は自動的に追加されます</p>
+                                </div>
+                            </div>
+                            
+                            {% if headers %}
+                            <div style="margin-top: 15px;">
+                                <label>エクスポートする列を選択:</label>
+                                <div style="max-height: 150px; overflow-y: auto; padding: 10px; background-color: var(--input-bg); border-radius: 4px; margin-bottom: 15px;">
+                                    {% for header in headers %}
+                                    <div style="margin-bottom: 8px;">
+                                        <input type="checkbox" id="col_{{ forloop.counter0 }}" name="selected_columns" value="{{ forloop.counter0 }}" checked style="width: auto; margin-right: 8px; display: inline;">
+                                        <label for="col_{{ forloop.counter0 }}" style="display: inline;">{{ header }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div>
+                                    <button type="button" id="select-all-cols" class="secondary" style="padding: 5px 10px; font-size: 14px;">すべて選択</button>
+                                    <button type="button" id="deselect-all-cols" class="secondary" style="padding: 5px 10px; font-size: 14px;">すべて解除</button>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                                <button type="submit" style="display: flex; align-items: center; gap: 8px;">
+                                    <span>データをエクスポート</span>
+                                </button>
+                                
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="button" id="copy-to-clipboard" class="secondary" style="padding: 8px 15px;">
+                                        クリップボードにコピー
+                                    </button>
+                                    <button type="button" id="print-results" class="secondary" style="padding: 8px 15px;">
+                                        印刷
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- 保存データ -->
+            <div id="saved-data" class="content-panel">
+                <h2>保存されたデータ</h2>
+                
+                {% if saved_data %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>名前</th>
+                                <th>日時</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in saved_data %}
+                                <tr>
+                                    <td>{{ data.name }}</td>
+                                    <td>{{ data.created_at }}</td>
+                                    <td>
+                                        <a href="{% url 'scraper:load_data' data.id %}">読込</a> |
+                                        <a href="{% url 'scraper:delete_data' data.id %}">削除</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>保存されたデータはありません。</p>
+                {% endif %}
+                
+                {% if results %}
+                    <form method="post" action="{% url 'scraper:save_data' %}">
+                        {% csrf_token %}
+                        <label for="save_name">データ名:</label>
+                        <input type="text" id="save_name" name="save_name" required>
+                        <button type="submit">現在のデータを保存</button>
+                    </form>
+                {% endif %}
+            </div>
+            
+            <!-- 設定の保存・読込 -->
+            <div id="save-load-config" class="content-panel">
+                <h2>スクレイピング設定の保存・読込</h2>
+                
+                <p>URLやログイン情報などのスクレイピング設定を保存・読込できます。使い回しの多い設定を保存しておくと便利です。</p>
+                
+                <!-- 設定保存フォーム -->
+                <div style="margin-top: 20px;">
+                    <label for="config_name">設定名:</label>
+                    <input type="text" id="config_name" placeholder="マイ設定 1" style="width: 70%; display: inline-block;">
+                    <button type="button" id="save_config" class="secondary" style="width: 28%; margin-left: 1%;">現在の設定を保存</button>
+                </div>
+                
+                <!-- 保存済み設定一覧 -->
+                <div id="saved_configs" style="margin-top: 20px;">
+                    <h3>保存済み設定</h3>
+                    <div class="results-area" style="max-height: 400px;">
+                        <table id="config_table">
+                            <thead>
+                                <tr>
+                                    <th>設定名</th>
+                                    <th>保存日時</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JavaScriptで動的に追加 -->
+                            </tbody>
+                        </table>
+                        <p id="no_configs" style="padding: 10px;">保存された設定はありません。</p>
+                    </div>
+                </div>
+                
+                <!-- エクスポート・インポートボタン -->
+                <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                    <button type="button" id="export_all_configs" class="secondary">全設定をエクスポート</button>
+                    <div style="position: relative; overflow: hidden; display: inline-block;">
+                        <button type="button" id="import_configs_btn" class="secondary">設定ファイルをインポート</button>
+                        <input type="file" id="import_configs" accept=".json" style="position: absolute; top: 0; left: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h3>設定の使い方</h3>
+                    <ul>
+                        <li><strong>設定の保存</strong>: スクレイピング設定を入力後、設定名を付けて「現在の設定を保存」ボタンをクリックします。</li>
+                        <li><strong>設定の読込</strong>: 保存済み設定一覧から読み込みたい設定の「読込」ボタンをクリックすると、その設定が適用されます。</li>
+                        <li><strong>設定のエクスポート</strong>: すべての保存済み設定をJSONファイルとして保存し、バックアップや別のデバイスでの利用が可能です。</li>
+                        <li><strong>設定のインポート</strong>: エクスポートしたJSONファイルから設定を読み込みます。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- エクスポート設定 -->
+            <div id="export-settings" class="content-panel">
+                <h2>エクスポート設定</h2>
+                
+                <form id="export-settings-form">
+                    <h3>CSVエクスポート設定</h3>
+                    <label for="csv_delimiter">区切り文字:</label>
+                    <select id="csv_delimiter" name="csv_delimiter">
+                        <option value="comma">カンマ (,)</option>
+                        <option value="tab">タブ</option>
+                        <option value="semicolon">セミコロン (;)</option>
+                    </select>
+                    
+                    <label for="csv_encoding">エンコーディング:</label>
+                    <select id="csv_encoding" name="csv_encoding">
+                        <option value="utf-8">UTF-8</option>
+                        <option value="shift-jis">Shift-JIS</option>
+                        <option value="euc-jp">EUC-JP</option>
+                    </select>
+                    
+                    <h3>画像ダウンロード設定</h3>
+                    <label for="image_format">画像フォーマット:</label>
+                    <select id="image_format" name="image_format">
+                        <option value="original">オリジナル形式</option>
+                        <option value="jpg">JPEG</option>
+                        <option value="png">PNG</option>
+                    </select>
+                    
+                    <label for="image_quality">画像品質 (JPEG):</label>
+                    <input type="range" id="image_quality" name="image_quality" min="50" max="100" value="85">
+                    <span id="image_quality_display">85</span>%
+                    
+                    <h3>動画ダウンロード設定</h3>
+                    <label for="video_format">動画フォーマット:</label>
+                    <select id="video_format" name="video_format">
+                        <option value="original">オリジナル形式</option>
+                        <option value="mp4">MP4</option>
+                        <option value="webm">WebM</option>
+                    </select>
+                    
+                    <label for="video_quality">動画品質:</label>
+                    <select id="video_quality" name="video_quality">
+                        <option value="highest">最高品質</option>
+                        <option value="medium">中程度の品質 (推奨)</option>
+                        <option value="lowest">低品質（高速）</option>
+                    </select>
+                    
+                    <button type="submit">設定を保存</button>
+                </form>
+            </div>
+
+            <!-- ログ表示 -->
+            <div id="log-viewer" class="content-panel">
+                <h2>スクレイピングログ</h2>
+                
+                <div class="log-controls" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label for="log-level" style="display: inline; margin-right: 10px;">ログレベル:</label>
+                        <select id="log-level" style="width: auto; display: inline-block; margin-right: 15px;">
+                            <option value="all">すべて</option>
+                            <option value="info">情報</option>
+                            <option value="warning">警告</option>
+                            <option value="error">エラー</option>
+                        </select>
+                        
+                        <label for="log-lines" style="display: inline; margin-right: 10px;">表示行数:</label>
+                        <select id="log-lines" style="width: auto; display: inline-block;">
+                            <option value="50">50行</option>
+                            <option value="100" selected>100行</option>
+                            <option value="200">200行</option>
+                            <option value="500">500行</option>
+                            <option value="1000">1000行</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <button id="refresh-log" class="secondary" style="margin-right: 10px;">
+                            更新
+                        </button>
+                        <button id="clear-log" class="danger">
+                            ログをクリア
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-box" style="margin-bottom: 15px;">
+                    <input type="text" id="log-search" placeholder="ログを検索..." style="margin-bottom: 10px;">
+                    <div class="search-controls" style="display: flex; gap: 10px;">
+                        <button id="search-prev" class="secondary" style="padding: 5px 10px; flex: 1;">前を検索</button>
+                        <button id="search-next" class="secondary" style="padding: 5px 10px; flex: 1;">次を検索</button>
+                        <span id="search-results" style="display: inline-block; min-width: 80px; text-align: right; padding: 5px;">0/0</span>
+                    </div>
+                </div>
+                
+                <div class="log-container" style="position: relative;">
+                    <div class="log-area results-area" style="font-family: monospace; white-space: pre-wrap; max-height: 600px; background-color: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; overflow: auto;">
+                        <div id="log-content">
+                            <div class="loading">ログを読み込み中...</div>
+                        </div>
+                    </div>
+                    <div id="log-status" style="position: absolute; bottom: 10px; right: 10px; background-color: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8em;">
+                        最終更新: <span id="last-update">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ヘルプ -->
+            <div id="help" class="content-panel">
+                <h2>MaxWell Webscraperの使い方ガイド</h2>
+                
+                <h3>ウェブスクレイピングとは？</h3>
+                <p>ウェブスクレイピングとは、ウェブサイトから情報を自動的に収集する技術です。例えば、ショッピングサイトの商品情報や、ニュースサイトの記事などを一度に取得できます。</p>
+                <p>このアプリケーションを使うと、プログラミングの知識がなくても、簡単な設定だけで様々なウェブサイトからデータを収集できます。</p>
+                
+                <h3>基本的な使い方</h3>
+                <ol>
+                    <li><strong>対象URLを入力</strong>: データを取得したいウェブサイトのアドレスを入力します。</li>
+                    <li><strong>CSSセレクタを設定</strong>: 収集したい情報がある部分を指定します。</li>
+                    <li><strong>オプション設定</strong>: 必要に応じて、ログイン情報やページ送り、画像・動画のダウンロードなどを設定します。</li>
+                    <li><strong>スクレイピング開始</strong>: ボタンをクリックすると、データの収集が始まります。</li>
+                    <li><strong>結果の確認と保存</strong>: 収集されたデータを確認し、必要に応じてCSVファイルとして保存できます。</li>
+                </ol>
+                
+                <h3>CSSセレクタについて（初心者向け）</h3>
+                <p>CSSセレクタとは、ウェブページの特定の部分を指し示すための「住所」のようなものです。例えば、「〇〇駅から南に500m、右側の青い建物」のように場所を指定するイメージです。</p>
+                
+                <p><strong>よく使われるセレクタの例：</strong></p>
+                <table>
+                    <tr>
+                        <th>セレクタ</th>
+                        <th>意味</th>
+                        <th>実際の例</th>
+                    </tr>
+                    <tr>
+                        <td><code>.class名</code></td>
+                        <td>特定のクラス名を持つ要素</td>
+                        <td><code>.product-item</code> - 商品一覧の各商品</td>
+                    </tr>
+                    <tr>
+                        <td><code>#id名</code></td>
+                        <td>特定のID名を持つ要素</td>
+                        <td><code>#main-content</code> - メインコンテンツ領域</td>
+                    </tr>
+                    <tr>
+                        <td><code>タグ名</code></td>
+                        <td>特定のHTML要素</td>
+                        <td><code>h1</code> - ページの大見出し</td>
+                    </tr>
+                    <tr>
+                        <td><code>親要素 > 子要素</code></td>
+                        <td>親要素の直下にある子要素</td>
+                        <td><code>.article > h2</code> - 記事内の見出し</td>
+                    </tr>
+                </table>
+                
+                <h4>セレクタの見つけ方</h4>
+                <p>ChromeやFirefoxなどのブラウザで、収集したい情報を右クリックして「検証」や「要素を調査」を選ぶと、その部分のHTMLコードが表示されます。そこからクラス名やID名を確認できます。</p>
+                <div style="background-color: rgba(60, 60, 60, 0.5); padding: 15px; border-radius: 4px; margin: 10px 0;">
+                    <p><strong>例：</strong> 商品名を表示している部分を右クリック → 「検証」を選択 → HTMLコードで <code>&lt;div class="product-title"&gt;商品名&lt;/div&gt;</code> と表示されていたら、セレクタは <code>.product-title</code> になります。</p>
+                </div>
+                
+                <p>セレクタがわからない場合は、「セレクタをテスト」機能を使って、入力したセレクタが正しく機能するか確認できます。</p>
+                
+                <h3>スクレイピングの詳細設定</h3>
+                
+                <h4>1. ログイン機能</h4>
+                <p>会員専用サイトなど、ログインが必要なウェブサイトからもデータを収集できます。</p>
+                <p><strong>設定方法：</strong></p>
+                <ul>
+                    <li>「ログインが必要」を「はい」に設定</li>
+                    <li>ユーザー名入力欄、パスワード入力欄、ログインボタンのセレクタをそれぞれ入力</li>
+                    <li>実際のユーザー名とパスワードを入力</li>
+                </ul>
+                <p><strong>注意：</strong> ログイン情報は安全に扱われますが、公共のコンピュータでは使用しないことをお勧めします。</p>
+                
+                <h4>2. ページネーション（複数ページの取得）</h4>
+                <p>商品一覧など、複数ページにわたるデータを自動的に収集できます。</p>
+                <p><strong>設定方法：</strong></p>
+                <ul>
+                    <li>「ページネーション」を「ページネーションあり」に設定</li>
+                    <li>「次ページセレクタ」に「次へ」ボタンや「>」ボタンのセレクタを入力</li>
+                    <li>「最大ページ数」に取得するページ数を設定（大きすぎると時間がかかります）</li>
+                </ul>
+                <p><strong>例：</strong> Amazonの商品一覧で2ページ目、3ページ目と自動的に進んで全商品を取得</p>
+                
+                <h4>3. 画像のダウンロード</h4>
+                <p>商品画像やサムネイルなどの画像を自動的にダウンロードできます。</p>
+                <p><strong>設定方法：</strong></p>
+                <ul>
+                    <li>「画像をダウンロード」を「はい」に設定</li>
+                    <li>「画像セレクタ」に画像要素のセレクタを入力（通常は <code>img</code> や <code>.product-image</code> など）</li>
+                </ul>
+                <p>ダウンロードされた画像は「images」フォルダに保存され、結果一覧には画像へのパスが表示されます。</p>
+                
+                <h4>4. 動画のダウンロード</h4>
+                <p>ウェブサイト内の動画を自動的にダウンロードできます。</p>
+                <p><strong>設定方法：</strong></p>
+                <ul>
+                    <li>「動画をダウンロード」を「はい」に設定</li>
+                    <li>「動画セレクタ」に動画要素のセレクタを入力（<code>video</code>, <code>iframe</code> など）</li>
+                </ul>
+                <p>ダウンロードされた動画は「videos」フォルダに保存されます。</p>
+                
+                <h4>5. リンク先ページの参照</h4>
+                <p>スクレイピングしたデータ内にリンクがある場合、そのリンク先のページも自動的にスクレイピングできます。</p>
+                <p><strong>設定方法：</strong></p>
+                <ul>
+                    <li>「リンク先を参照」を「はい」に設定</li>
+                    <li>「リンク深さ」でリンクを辿る階層の深さを指定（1～3の範囲を推奨）</li>
+                </ul>
+                <p><strong>注意：</strong> 深さを大きくしすぎると処理時間が大幅に増加します。まずは深さ1から試すことをお勧めします。</p>
+                <p>結果には「リンク元」と「深さ」の列が追加され、どのページから取得したデータか、どの階層にあるかが表示されます。</p>
+                
+                <h3>動画の自動検出機能</h3>
+                <p>当アプリケーションには画像から動画を自動検出する機能があります。例えば、サムネイル画像をクリックすると動画が再生されるようなサイトでも、その動画を自動的に見つけてダウンロードできます。</p>
+                
+                <p><strong>自動検出される条件：</strong></p>
+                <ul>
+                    <li>画像のリンク先が動画ファイル（.mp4, .webm, .movなど）の場合</li>
+                    <li>画像に<code>data-video</code>や<code>data-video-src</code>などの特別な属性がある場合</li>
+                    <li>画像がリンク（クリックできる要素）で、そのリンク先が動画ファイルの場合</li>
+                </ul>
+                
+                <p><strong>使い方：</strong> この機能を利用するには、「画像をダウンロード」を「はい」に設定するだけです。画像と関連する動画が自動的に検出されます。</p>
+                
+                <h3>データの保存と再利用</h3>
+                <p>スクレイピングで収集したデータは、以下の方法で保存・再利用できます：</p>
+                <ul>
+                    <li><strong>CSVエクスポート</strong>: 結果をエクセルなどで開ける形式で保存</li>
+                    <li><strong>データの保存</strong>: 名前をつけてアプリ内に保存し、後で再度読み込める</li>
+                </ul>
+                <p>保存したデータは「保存データ」タブで管理できます。</p>
+                
+                <h3>スクレイピング設定の保存と読込</h3>
+                <p>よく使うスクレイピング設定（URL、セレクタ、ログイン情報など）を保存して再利用できます。</p>
+                <p><strong>設定の保存方法：</strong></p>
+                <ol>
+                    <li>「エクスポート設定」タブを開く</li>
+                    <li>「スクレイピング設定の保存・読込」セクションにある「設定名」を入力</li>
+                    <li>「現在の設定を保存」ボタンをクリック</li>
+                </ol>
+                <p><strong>設定の読込方法：</strong></p>
+                <ol>
+                    <li>「エクスポート設定」タブを開く</li>
+                    <li>保存済み設定一覧から読み込みたい設定の「読込」ボタンをクリック</li>
+                </ol>
+                <p><strong>設定のエクスポート・インポート：</strong></p>
+                <ul>
+                    <li><strong>設定のエクスポート</strong>: 「全設定をエクスポート」ボタンで、保存した設定をJSONファイルとして保存できます。</li>
+                    <li><strong>設定のインポート</strong>: 「設定ファイルをインポート」ボタンで、エクスポートしたJSONファイルを読み込めます。</li>
+                </ul>
+                <p>この機能を使うと、複数のコンピュータ間で設定を共有したり、バックアップを取ったりできます。</p>
+                
+                <h3>使用例（具体的なシナリオ）</h3>
+                
+                <h4>例1: ショッピングサイトの商品情報収集</h4>
+                <ol>
+                    <li>対象URL: 「https://example-shop.com/products」</li>
+                    <li>CSSセレクタ: 「.product-item」（各商品のコンテナ）</li>
+                    <li>画像をダウンロード: 「はい」、画像セレクタ: 「.product-image img」</li>
+                    <li>ページネーション: 「はい」、次ページセレクタ: 「.pagination .next」</li>
+                </ol>
+                <p>結果: 商品名、価格、説明文などの情報と商品画像を自動的に収集</p>
+                
+                <h4>例2: ニュースサイトの記事タイトル収集</h4>
+                <ol>
+                    <li>対象URL: 「https://example-news.com」</li>
+                    <li>CSSセレクタ: 「.article-title」（記事タイトル）</li>
+                </ol>
+                <p>結果: サイト内の全記事タイトルを一覧で取得</p>
+                
+                <h3>よくある問題と解決方法</h3>
+                
+                <h4>データが取得できない</h4>
+                <ul>
+                    <li><strong>セレクタが間違っている</strong>: 「セレクタをテスト」機能で確認し、正しいセレクタを見つけてください。</li>
+                    <li><strong>動的コンテンツ</strong>: 一部のサイトではJavaScriptでコンテンツが後から読み込まれるため、取得できないことがあります。</li>
+                    <li><strong>サイト側の制限</strong>: 一部のサイトではスクレイピングを制限していることがあります。</li>
+                </ul>
+                
+                <h4>ログインできない</h4>
+                <ul>
+                    <li><strong>セレクタの確認</strong>: ログインフォームの各要素（ユーザー名欄、パスワード欄、ボタン）のセレクタが正確か確認してください。</li>
+                    <li><strong>CAPTCHA</strong>: 「人間かどうかの確認」があるサイトは自動ログインができません。</li>
+                    <li><strong>二段階認証</strong>: 二段階認証が必要なサイトは対応していません。</li>
+                </ul>
+                
+                <h4>画像や動画がダウンロードできない</h4>
+                <ul>
+                    <li><strong>セレクタの確認</strong>: 画像や動画の要素を正しく指定しているか確認してください。</li>
+                    <li><strong>保護されたコンテンツ</strong>: 著作権保護などの理由で直接ダウンロードできない場合があります。</li>
+                    <li><strong>動的なURL</strong>: 一部のサイトでは画像や動画のURLが動的に生成され、取得できない場合があります。</li>
+                </ul>
+                
+                <h3>セキュリティとプライバシーに関する注意</h3>
+                <ul>
+                    <li>このツールは個人の学習や研究目的での使用を想定しています。</li>
+                    <li>著作権で保護されたコンテンツや、サイトの利用規約に反する方法でのデータ収集はお控えください。</li>
+                    <li>収集したデータの取り扱いには十分注意し、個人情報の保護に努めてください。</li>
+                </ul>
+                
+                <h3>さらに詳しく学ぶには</h3>
+                <p>CSSセレクタやウェブスクレイピングについて詳しく学ぶには、以下のリソースが役立ちます：</p>
+                <ul>
+                    <li><a href="https://developer.mozilla.org/ja/docs/Web/CSS/CSS_Selectors" target="_blank">MDN Web Docs: CSSセレクタ</a></li>
+                    <li><a href="https://www.w3schools.com/cssref/css_selectors.asp" target="_blank">W3Schools: CSS Selector Reference</a></li>
+                </ul>
+                
+                <p>使い方について質問がある場合は、お気軽にお問い合わせください。</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>© 2025 MaxWell Webscraper - Python、Django、Seleniumで構築</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // メニュー切り替え
+            const menuLinks = document.querySelectorAll('.menu-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetPanel = this.getAttribute('data-target');
+                    
+                    // アクティブなメニューリンクを変更
+                    menuLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // アクティブなパネルを表示
+                    contentPanels.forEach(panel => {
+                        if (panel.id === targetPanel) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            // フォーム条件分岐の設定
+            const loginRequiredSelect = document.getElementById('login_required');
+            const loginFields = document.getElementById('login-fields');
+            
+            loginRequiredSelect.addEventListener('change', function() {
+                loginFields.style.display = this.value === 'yes' ? 'block' : 'none';
+            });
+            
+            const paginationSelect = document.getElementById('pagination');
+            const paginationFields = document.getElementById('pagination-fields');
+            
+            paginationSelect.addEventListener('change', function() {
+                paginationFields.style.display = this.value === 'yes' ? 'block' : 'none';
+            });
+            
+            const downloadImagesSelect = document.getElementById('download_images');
+            const imageFields = document.getElementById('image-fields');
+            
+            downloadImagesSelect.addEventListener('change', function() {
+                imageFields.style.display = this.value === 'yes' ? 'block' : 'none';
+            });
+            
+            const downloadVideosSelect = document.getElementById('download_videos');
+            const videoFields = document.getElementById('video-fields');
+            
+            if (downloadVideosSelect && videoFields) {
+                downloadVideosSelect.addEventListener('change', function() {
+                    videoFields.style.display = this.value === 'yes' ? 'block' : 'none';
+                });
+            }
+            
+            // リンク先参照の表示/非表示
+            const followLinksSelect = document.getElementById('follow_links');
+            const linkFields = document.getElementById('link-fields');
+            
+            if (followLinksSelect && linkFields) {
+                followLinksSelect.addEventListener('change', function() {
+                    linkFields.style.display = this.value === 'yes' ? 'block' : 'none';
+                });
+            }
+            
+            // セレクタテストボタン
+            const testSelectorBtn = document.getElementById('test-selector');
+            const urlInput = document.getElementById('url');
+            const selectorInput = document.getElementById('selector');
+            const selectorTestResult = document.getElementById('selector-test-result');
+            
+            testSelectorBtn.addEventListener('click', function() {
+                const url = urlInput.value;
+                const selector = selectorInput.value;
+                
+                if (!url || !selector) {
+                    alert('URLとCSSセレクタを入力してください。');
+                    return;
+                }
+                
+                selectorTestResult.innerHTML = '<div class="loading">テスト中</div>';
+                selectorTestResult.style.display = 'block';
+                
+                // セレクタテストAPIを呼び出す
+                fetch('{% url "scraper:test_selector" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        selector: selector
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // 結果のHTML生成
+                        let previewHtml = '<div class="results-preview">';
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(item => {
+                                previewHtml += `
+                                    <div class="preview-item" style="margin-bottom: 10px; padding: 5px; border-bottom: 1px dashed var(--border-color);">
+                                        <div><strong>テキスト:</strong> ${item.text || '(空)'}</div>
+                                        <div class="preview-html" style="margin-top: 5px; font-size: 0.85em; color: #aaa; word-break: break-all; max-height: 100px; overflow: hidden;">
+                                            ${item.html ? `<code>${item.html.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            previewHtml += '<p>プレビューする内容がありません。</p>';
+                        }
+                        previewHtml += '</div>';
+                        
+                        selectorTestResult.innerHTML = `
+                            <div class="alert alert-success">
+                                セレクタのテストに成功しました。${data.total_count || 0}個の要素が見つかりました。
+                            </div>
+                            ${previewHtml}
+                        `;
+                    } else {
+                        selectorTestResult.innerHTML = `
+                            <div class="alert alert-error">
+                                セレクタのテストに失敗しました。${data.message || 'エラーが発生しました。'}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    selectorTestResult.innerHTML = `
+                        <div class="alert alert-error">
+                            通信エラーが発生しました。
+                        </div>
+                    `;
+                    console.error('セレクタテスト中にエラーが発生:', error);
+                });
+            });
+            
+            // レンジスライダーの値を表示
+            const imageQualitySlider = document.getElementById('image_quality');
+            const imageQualityDisplay = document.getElementById('image_quality_display');
+            
+            if (imageQualitySlider && imageQualityDisplay) {
+                imageQualitySlider.addEventListener('input', function() {
+                    imageQualityDisplay.textContent = this.value;
+                });
+            }
+            
+            // スクレイピング結果のエクスポート設定
+            const exportFormatSelect = document.getElementById('export_format');
+            const csvDelimiterSelect = document.getElementById('csv_delimiter');
+            const selectAllColsBtn = document.getElementById('select-all-cols');
+            const deselectAllColsBtn = document.getElementById('deselect-all-cols');
+            const copyToClipboardBtn = document.getElementById('copy-to-clipboard');
+            const printResultsBtn = document.getElementById('print-results');
+            
+            // エクスポート形式の変更時の処理
+            if (exportFormatSelect && csvDelimiterSelect) {
+                exportFormatSelect.addEventListener('change', function() {
+                    // CSVの場合のみ区切り文字設定を表示
+                    const isCSV = this.value === 'csv';
+                    csvDelimiterSelect.parentElement.style.display = isCSV ? 'block' : 'none';
+                });
+            }
+            
+            // 列の選択/解除ボタン
+            if (selectAllColsBtn) {
+                selectAllColsBtn.addEventListener('click', function() {
+                    document.querySelectorAll('input[name="selected_columns"]').forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                });
+            }
+            
+            if (deselectAllColsBtn) {
+                deselectAllColsBtn.addEventListener('click', function() {
+                    document.querySelectorAll('input[name="selected_columns"]').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                });
+            }
+            
+            // クリップボードにコピー
+            if (copyToClipboardBtn) {
+                copyToClipboardBtn.addEventListener('click', function() {
+                    const resultsTable = document.querySelector('#scraping-results table');
+                    if (!resultsTable) {
+                        alert('コピーするデータがありません。');
+                        return;
+                    }
+                    
+                    // 選択された列を取得
+                    const selectedColumns = Array.from(document.querySelectorAll('input[name="selected_columns"]:checked'))
+                        .map(checkbox => parseInt(checkbox.value));
+                    
+                    // ヘッダーを含めるかどうか
+                    const includeHeaders = document.getElementById('include_headers').value === 'yes';
+                    
+                    // 区切り文字の設定
+                    let delimiter;
+                    switch (document.getElementById('csv_delimiter').value) {
+                        case 'tab':
+                            delimiter = '\t';
+                            break;
+                        case 'semicolon':
+                            delimiter = ';';
+                            break;
+                        default:
+                            delimiter = ',';
+                    }
+                    
+                    // テーブルからデータを抽出
+                    const rows = Array.from(resultsTable.querySelectorAll('tr'));
+                    let textData = '';
+                    
+                    // ヘッダー行を処理
+                    if (includeHeaders && rows.length > 0) {
+                        const headerCells = Array.from(rows[0].querySelectorAll('th'));
+                        const headerRow = selectedColumns.map(index => {
+                            if (index < headerCells.length) {
+                                return headerCells[index].textContent.trim().replace(/"/g, '""');
+                            }
+                            return '';
+                        }).map(cell => `"${cell}"`).join(delimiter);
+                        textData += headerRow + '\n';
+                    }
+                    
+                    // データ行を処理（ヘッダー行がある場合は1から開始）
+                    const startIndex = includeHeaders ? 1 : 0;
+                    for (let i = startIndex; i < rows.length; i++) {
+                        const cells = Array.from(rows[i].querySelectorAll('td'));
+                        
+                        // 選択された列のみを含める
+                        const rowData = selectedColumns.map(index => {
+                            if (index < cells.length) {
+                                return cells[index].textContent.trim().replace(/"/g, '""');
+                            }
+                            return '';
+                        }).map(cell => `"${cell}"`).join(delimiter);
+                        
+                        textData += rowData + '\n';
+                    }
+                    
+                    // クリップボードにコピー
+                    navigator.clipboard.writeText(textData).then(() => {
+                        alert('データをクリップボードにコピーしました。');
+                    }).catch(err => {
+                        console.error('クリップボードへのコピーに失敗しました:', err);
+                        alert('クリップボードへのコピーに失敗しました。');
+                    });
+                });
+            }
+            
+            // 印刷機能
+            if (printResultsBtn) {
+                printResultsBtn.addEventListener('click', function() {
+                    const resultsTable = document.querySelector('#scraping-results table');
+                    if (!resultsTable) {
+                        alert('印刷するデータがありません。');
+                        return;
+                    }
+                    
+                    // 選択された列を取得
+                    const selectedColumns = Array.from(document.querySelectorAll('input[name="selected_columns"]:checked'))
+                        .map(checkbox => parseInt(checkbox.value));
+                    
+                    // ヘッダーを含めるかどうか
+                    const includeHeaders = document.getElementById('include_headers').value === 'yes';
+                    
+                    // 印刷用のHTMLを作成
+                    let printContent = `
+                        <html>
+                        <head>
+                            <title>スクレイピング結果</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; }
+                                table { width: 100%; border-collapse: collapse; }
+                                th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+                                th { background-color: #f2f2f2; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>スクレイピング結果</h1>
+                            <table>
+                    `;
+                    
+                    // テーブルからデータを抽出
+                    const rows = Array.from(resultsTable.querySelectorAll('tr'));
+                    
+                    // ヘッダー行を処理
+                    if (includeHeaders && rows.length > 0) {
+                        const headerCells = Array.from(rows[0].querySelectorAll('th'));
+                        printContent += '<thead><tr>';
+                        selectedColumns.forEach(index => {
+                            if (index < headerCells.length) {
+                                printContent += `<th>${headerCells[index].textContent.trim()}</th>`;
+                            }
+                        });
+                        printContent += '</tr></thead>';
+                    }
+                    
+                    // データ行を処理
+                    printContent += '<tbody>';
+                    const startIndex = includeHeaders ? 1 : 0;
+                    for (let i = startIndex; i < rows.length; i++) {
+                        const cells = Array.from(rows[i].querySelectorAll('td'));
+                        printContent += '<tr>';
+                        
+                        // 選択された列のみを含める
+                        selectedColumns.forEach(index => {
+                            if (index < cells.length) {
+                                printContent += `<td>${cells[index].textContent.trim()}</td>`;
+                            }
+                        });
+                        
+                        printContent += '</tr>';
+                    }
+                    printContent += '</tbody></table></body></html>';
+                    
+                    // 印刷用ウィンドウを開く
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(printContent);
+                    printWindow.document.close();
+                    
+                    // 少し遅延させてから印刷ダイアログを表示
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 500);
+                });
+            }
+            
+            // 設定の保存・読込機能
+            const saveConfigBtn = document.getElementById('save_config');
+            const configNameInput = document.getElementById('config_name');
+            const configTable = document.getElementById('config_table');
+            const noConfigsMsg = document.getElementById('no_configs');
+            const exportAllConfigsBtn = document.getElementById('export_all_configs');
+            const importConfigsInput = document.getElementById('import_configs');
+            
+            if (saveConfigBtn && configNameInput) {
+                // ローカルストレージから設定を読み込む
+                function loadConfigs() {
+                    const configs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                    updateConfigTable(configs);
+                }
+                
+                // 設定テーブルを更新する
+                function updateConfigTable(configs) {
+                    if (!configTable || !noConfigsMsg) return;
+                    
+                    const tbody = configTable.querySelector('tbody');
+                    tbody.innerHTML = '';
+                    
+                    if (configs.length === 0) {
+                        noConfigsMsg.style.display = 'block';
+                        configTable.style.display = 'none';
+                        return;
+                    }
+                    
+                    noConfigsMsg.style.display = 'none';
+                    configTable.style.display = 'table';
+                    
+                    configs.forEach((config, index) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${config.name}</td>
+                            <td>${new Date(config.timestamp).toLocaleString()}</td>
+                            <td>
+                                <button type="button" class="load-config" data-index="${index}">読込</button>
+                                <button type="button" class="delete-config" data-index="${index}">削除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    // 読込ボタンのイベントリスナー
+                    document.querySelectorAll('.load-config').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            loadConfig(index);
+                        });
+                    });
+                    
+                    // 削除ボタンのイベントリスナー
+                    document.querySelectorAll('.delete-config').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            deleteConfig(index);
+                        });
+                    });
+                }
+                
+                // 現在の設定を保存する
+                saveConfigBtn.addEventListener('click', function() {
+                    const configName = configNameInput.value.trim() || `設定 ${new Date().toLocaleString()}`;
+                    
+                    // 設定を取得
+                    const config = {
+                        name: configName,
+                        timestamp: new Date().getTime(),
+                        settings: {
+                            url: document.getElementById('url').value,
+                            selector: document.getElementById('selector').value,
+                            login_required: document.getElementById('login_required').value,
+                            username_selector: document.getElementById('username_selector')?.value,
+                            password_selector: document.getElementById('password_selector')?.value,
+                            login_button_selector: document.getElementById('login_button_selector')?.value,
+                            username: document.getElementById('username')?.value,
+                            password: document.getElementById('password')?.value,
+                            pagination: document.getElementById('pagination').value,
+                            next_page_selector: document.getElementById('next_page_selector')?.value,
+                            max_pages: document.getElementById('max_pages')?.value,
+                            download_images: document.getElementById('download_images').value,
+                            image_selector: document.getElementById('image_selector')?.value,
+                            download_videos: document.getElementById('download_videos')?.value,
+                            video_selector: document.getElementById('video_selector')?.value
+                        }
+                    };
+                    
+                    // ローカルストレージに保存
+                    const configs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                    configs.push(config);
+                    localStorage.setItem('scraper_configs', JSON.stringify(configs));
+                    
+                    // テーブルを更新
+                    updateConfigTable(configs);
+                    
+                    // 入力フィールドをクリア
+                    configNameInput.value = '';
+                    
+                    alert(`設定「${configName}」を保存しました。`);
+                });
+                
+                // 設定を読み込む
+                function loadConfig(index) {
+                    const configs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                    const config = configs[index];
+                    
+                    if (!config) return;
+                    
+                    const settings = config.settings;
+                    
+                    // フォームに値を設定
+                    document.getElementById('url').value = settings.url || '';
+                    document.getElementById('selector').value = settings.selector || '';
+                    document.getElementById('login_required').value = settings.login_required || 'no';
+                    
+                    if (settings.login_required === 'yes') {
+                        document.getElementById('login-fields').style.display = 'block';
+                        document.getElementById('username_selector').value = settings.username_selector || '';
+                        document.getElementById('password_selector').value = settings.password_selector || '';
+                        document.getElementById('login_button_selector').value = settings.login_button_selector || '';
+                        document.getElementById('username').value = settings.username || '';
+                        document.getElementById('password').value = settings.password || '';
+                    }
+                    
+                    document.getElementById('pagination').value = settings.pagination || 'no';
+                    
+                    if (settings.pagination === 'yes') {
+                        document.getElementById('pagination-fields').style.display = 'block';
+                        document.getElementById('next_page_selector').value = settings.next_page_selector || '';
+                        document.getElementById('max_pages').value = settings.max_pages || '5';
+                    }
+                    
+                    document.getElementById('download_images').value = settings.download_images || 'no';
+                    
+                    if (settings.download_images === 'yes') {
+                        document.getElementById('image-fields').style.display = 'block';
+                        document.getElementById('image_selector').value = settings.image_selector || '';
+                    }
+                    
+                    if (document.getElementById('download_videos')) {
+                        document.getElementById('download_videos').value = settings.download_videos || 'no';
+                        
+                        if (settings.download_videos === 'yes' && document.getElementById('video-fields')) {
+                            document.getElementById('video-fields').style.display = 'block';
+                            document.getElementById('video_selector').value = settings.video_selector || '';
+                        }
+                    }
+                    
+                    // スクレイピング設定タブを表示
+                    document.querySelector('.menu-link[data-target="scraping-settings"]').click();
+                    
+                    alert(`設定「${config.name}」を読み込みました。`);
+                }
+                
+                // 設定を削除する
+                function deleteConfig(index) {
+                    if (!confirm('この設定を削除してもよろしいですか？')) return;
+                    
+                    const configs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                    const configName = configs[index]?.name;
+                    
+                    configs.splice(index, 1);
+                    localStorage.setItem('scraper_configs', JSON.stringify(configs));
+                    
+                    // テーブルを更新
+                    updateConfigTable(configs);
+                    
+                    alert(`設定「${configName}」を削除しました。`);
+                }
+                
+                // 全設定をエクスポート
+                if (exportAllConfigsBtn) {
+                    exportAllConfigsBtn.addEventListener('click', function() {
+                        const configs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                        
+                        if (configs.length === 0) {
+                            alert('エクスポートする設定がありません。');
+                            return;
+                        }
+                        
+                        const dataStr = JSON.stringify(configs, null, 2);
+                        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                        
+                        const exportFileDefaultName = `maxwell-webscraper-configs-${new Date().toISOString().slice(0, 10)}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                    });
+                }
+                
+                // 設定をインポート
+                if (importConfigsInput) {
+                    importConfigsInput.addEventListener('change', function() {
+                        const file = this.files[0];
+                        
+                        if (!file) return;
+                        
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            try {
+                                const configs = JSON.parse(e.target.result);
+                                
+                                if (!Array.isArray(configs)) {
+                                    throw new Error('無効な設定ファイルです。');
+                                }
+                                
+                                // 現在の設定とマージ
+                                const currentConfigs = JSON.parse(localStorage.getItem('scraper_configs')) || [];
+                                const mergedConfigs = [...currentConfigs, ...configs];
+                                
+                                localStorage.setItem('scraper_configs', JSON.stringify(mergedConfigs));
+                                
+                                // テーブルを更新
+                                updateConfigTable(mergedConfigs);
+                                
+                                alert(`${configs.length}個の設定をインポートしました。`);
+                            } catch (error) {
+                                alert('設定ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
+                                console.error('Import error:', error);
+                            }
+                        };
+                        
+                        reader.readAsText(file);
+                        
+                        // ファイル選択をリセット
+                        this.value = '';
+                    });
+                }
+                
+                // 初期化時に設定を読み込む
+                loadConfigs();
+            }
+            
+            // ログ表示機能
+            const logLevelSelect = document.getElementById('log-level');
+            const logLinesSelect = document.getElementById('log-lines');
+            const refreshLogBtn = document.getElementById('refresh-log');
+            const clearLogBtn = document.getElementById('clear-log');
+            const logContent = document.getElementById('log-content');
+            const logSearch = document.getElementById('log-search');
+            const searchPrevBtn = document.getElementById('search-prev');
+            const searchNextBtn = document.getElementById('search-next');
+            const searchResults = document.getElementById('search-results');
+            const lastUpdateEl = document.getElementById('last-update');
+            
+            // ログの読み込み
+            function loadLogs() {
+                if (!logContent) return;
+                
+                logContent.innerHTML = '<div class="loading">ログを読み込み中...</div>';
+                
+                const level = logLevelSelect ? logLevelSelect.value : 'all';
+                const lines = logLinesSelect ? logLinesSelect.value : '100';
+                const search = logSearch ? logSearch.value : '';
+                
+                fetch(`{% url 'scraper:get_logs' %}?level=${level}&lines=${lines}&search=${encodeURIComponent(search)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // ログデータを表示
+                            if (data.logs.length > 0) {
+                                let logHtml = '';
+                                data.logs.forEach(log => {
+                                    logHtml += `<div class="${log.class}">${escapeHtml(log.text)}</div>`;
+                                });
+                                logContent.innerHTML = logHtml;
+                                
+                                // 最終更新を表示
+                                if (lastUpdateEl) {
+                                    lastUpdateEl.textContent = data.last_modified || '-';
+                                }
+                                
+                                // 検索を実行
+                                if (search) {
+                                    highlightSearch();
+                                }
+                            } else {
+                                logContent.innerHTML = '<div class="log-empty">ログが見つかりません</div>';
+                            }
+                        } else {
+                            logContent.innerHTML = `<div class="log-error">エラー: ${data.message || 'ログの取得に失敗しました'}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        logContent.innerHTML = `<div class="log-error">通信エラー: ${error.message}</div>`;
+                        console.error('Error loading logs:', error);
+                    });
+            }
+            
+            // HTMLエスケープ
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // 検索結果をハイライト
+            function highlightSearch() {
+                if (!logContent || !logSearch || !searchResults) return;
+                
+                const searchTerm = logSearch.value.trim();
+                if (!searchTerm) {
+                    searchResults.textContent = '0/0';
+                    return;
+                }
+                
+                // 既存のハイライトを削除
+                const highlighted = logContent.querySelectorAll('.search-highlight');
+                highlighted.forEach(el => {
+                    const parent = el.parentNode;
+                    parent.replaceChild(document.createTextNode(el.textContent), el);
+                });
+                
+                // ログ内のテキストノードを検索して置換
+                const logElements = logContent.childNodes;
+                let matchCount = 0;
+                let currentMatch = -1;
+                
+                logElements.forEach(logEl => {
+                    if (logEl.nodeType !== Node.ELEMENT_NODE) return;
+                    
+                    const html = logEl.innerHTML;
+                    const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                    const newHtml = html.replace(regex, match => {
+                        matchCount++;
+                        return `<span class="search-highlight" data-match-index="${matchCount - 1}">${match}</span>`;
+                    });
+                    
+                    if (html !== newHtml) {
+                        logEl.innerHTML = newHtml;
+                    }
+                });
+                
+                // 検索結果を表示
+                searchResults.textContent = matchCount > 0 ? `1/${matchCount}` : '0/0';
+                
+                // 最初のマッチにスクロール
+                if (matchCount > 0) {
+                    scrollToMatch(0);
+                }
+            }
+            
+            // 特定のマッチにスクロール
+            function scrollToMatch(index) {
+                const match = logContent.querySelector(`.search-highlight[data-match-index="${index}"]`);
+                if (match) {
+                    // 前のアクティブなマッチをリセット
+                    const activeMatch = logContent.querySelector('.search-highlight.active');
+                    if (activeMatch) {
+                        activeMatch.classList.remove('active');
+                    }
+                    
+                    // 新しいマッチをアクティブに
+                    match.classList.add('active');
+                    match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // 現在のマッチインデックスを更新
+                    currentMatchIndex = index;
+                    searchResults.textContent = `${index + 1}/${logContent.querySelectorAll('.search-highlight').length}`;
+                }
+            }
+            
+            // 検索インデックス
+            let currentMatchIndex = -1;
+            
+            // 次の検索結果に移動
+            if (searchNextBtn) {
+                searchNextBtn.addEventListener('click', () => {
+                    const matches = logContent.querySelectorAll('.search-highlight');
+                    if (matches.length === 0) return;
+                    
+                    currentMatchIndex = (currentMatchIndex + 1) % matches.length;
+                    scrollToMatch(currentMatchIndex);
+                });
+            }
+            
+            // 前の検索結果に移動
+            if (searchPrevBtn) {
+                searchPrevBtn.addEventListener('click', () => {
+                    const matches = logContent.querySelectorAll('.search-highlight');
+                    if (matches.length === 0) return;
+                    
+                    currentMatchIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+                    scrollToMatch(currentMatchIndex);
+                });
+            }
+            
+            // レベル変更時にログを再読み込み
+            if (logLevelSelect) {
+                logLevelSelect.addEventListener('change', loadLogs);
+            }
+            
+            // 行数変更時にログを再読み込み
+            if (logLinesSelect) {
+                logLinesSelect.addEventListener('change', loadLogs);
+            }
+            
+            // 検索ボックスの入力時にログを再検索
+            if (logSearch) {
+                logSearch.addEventListener('input', () => {
+                    clearTimeout(logSearch.debounceTimer);
+                    logSearch.debounceTimer = setTimeout(() => {
+                        loadLogs();
+                    }, 500);
+                });
+                
+                // Enterキーで検索
+                logSearch.addEventListener('keyup', event => {
+                    if (event.key === 'Enter') {
+                        loadLogs();
+                    }
+                });
+            }
+            
+            // 更新ボタンクリック時にログを再読み込み
+            if (refreshLogBtn) {
+                refreshLogBtn.addEventListener('click', loadLogs);
+            }
+            
+            // クリアボタンクリック時にログをクリア
+            if (clearLogBtn) {
+                clearLogBtn.addEventListener('click', () => {
+                    if (confirm('ログをクリアしますか？')) {
+                        fetch('{% url "scraper:clear_logs" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                loadLogs();
+                            } else {
+                                alert(`エラー: ${data.message || 'ログのクリアに失敗しました'}`);
+                            }
+                        })
+                        .catch(error => {
+                            alert(`通信エラー: ${error.message}`);
+                            console.error('Error clearing logs:', error);
+                        });
+                    }
+                });
+            }
+            
+            // ログビューアが表示されたときにログを読み込む
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (this.getAttribute('data-target') === 'log-viewer') {
+                        loadLogs();
+                    }
+                });
+            });
+            
+            // ログ関連のスタイルを動的に追加
+            const logStyle = document.createElement('style');
+            logStyle.textContent = `
+                .log-info { color: #d4d4d4; }
+                .log-warning { color: #e5c07b; }
+                .log-error { color: #e06c75; }
+                .log-debug { color: #98c379; }
+                .log-empty { color: #999; text-align: center; padding: 10px; }
+                .search-highlight { background-color: rgba(215, 153, 33, 0.4); border-radius: 2px; }
+                .search-highlight.active { background-color: rgba(215, 153, 33, 0.8); }
+            `;
+            document.head.appendChild(logStyle);
+        });
+    </script>
+</body>
+</html> 

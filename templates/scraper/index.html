@@ -1,0 +1,480 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxWell Webscraper</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --primary-color: #4a6eb5;
+            --secondary-color: #364f6b;
+            --accent-color: #fc5185;
+            --border-color: #333;
+            --hover-color: #2a2a2a;
+            --input-bg: #2c2c2c;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: 95vh;
+        }
+        
+        .panel {
+            background-color: rgba(40, 40, 40, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 110, 181, 0.3);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #395b9c;
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #273a4d;
+        }
+        
+        button.danger {
+            background-color: var(--error-color);
+        }
+        
+        button.danger:hover {
+            background-color: #bd2130;
+        }
+        
+        .results-area {
+            overflow: auto;
+            max-height: 70vh;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(40, 40, 40, 0.5);
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        tr:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.2);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+        
+        .selector-test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed var(--border-color);
+            background-color: rgba(60, 60, 60, 0.5);
+            max-height: 200px;
+            overflow: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>MaxWell Webscraper</h1>
+    
+    <div class="container">
+        <!-- 左パネル: スクレイピング設定 -->
+        <div class="panel">
+            <h2>スクレイピング設定</h2>
+            
+            <form id="scraper-form" method="post" action="{% url 'scraper:scrape' %}">
+                {% csrf_token %}
+                
+                <label for="url">対象URL:</label>
+                <input type="url" id="url" name="url" placeholder="https://example.com" required>
+                <p class="help-text">スクレイピングするWebサイトのURLを入力してください</p>
+                
+                <label for="selector">CSSセレクタ:</label>
+                <input type="text" id="selector" name="selector" placeholder=".product-item" required>
+                <p class="help-text">データを抽出するHTML要素のCSSセレクタ</p>
+                
+                <button type="button" id="test-selector" class="secondary">セレクタをテスト</button>
+                <div id="selector-test-result" class="selector-test-result" style="display: none;"></div>
+                
+                <label for="login_required">ログインが必要:</label>
+                <select id="login_required" name="login_required">
+                    <option value="no">いいえ</option>
+                    <option value="yes">はい</option>
+                </select>
+                
+                <div id="login-fields" style="display: none;">
+                    <label for="username_selector">ユーザー名セレクタ:</label>
+                    <input type="text" id="username_selector" name="username_selector" placeholder="#username">
+                    
+                    <label for="password_selector">パスワードセレクタ:</label>
+                    <input type="text" id="password_selector" name="password_selector" placeholder="#password">
+                    
+                    <label for="login_button_selector">ログインボタンセレクタ:</label>
+                    <input type="text" id="login_button_selector" name="login_button_selector" placeholder=".login-btn">
+                    
+                    <label for="username">ユーザー名:</label>
+                    <input type="text" id="username" name="username">
+                    
+                    <label for="password">パスワード:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                
+                <label for="pagination">ページネーション:</label>
+                <select id="pagination" name="pagination">
+                    <option value="no">ページネーションなし</option>
+                    <option value="yes">ページネーションあり</option>
+                </select>
+                
+                <div id="pagination-fields" style="display: none;">
+                    <label for="next_page_selector">次ページセレクタ:</label>
+                    <input type="text" id="next_page_selector" name="next_page_selector" placeholder=".next-page">
+                    
+                    <label for="max_pages">最大ページ数:</label>
+                    <input type="number" id="max_pages" name="max_pages" min="1" value="5">
+                </div>
+                
+                <label for="download_images">画像をダウンロード:</label>
+                <select id="download_images" name="download_images">
+                    <option value="no">いいえ</option>
+                    <option value="yes">はい</option>
+                </select>
+                
+                <div id="image-fields" style="display: none;">
+                    <label for="image_selector">画像セレクタ:</label>
+                    <input type="text" id="image_selector" name="image_selector" placeholder="img">
+                </div>
+                
+                <button type="submit">スクレイピング開始</button>
+                <button type="reset" class="danger">リセット</button>
+            </form>
+        </div>
+        
+        <!-- 中央パネル: 結果表示 -->
+        <div class="panel">
+            <h2>スクレイピング結果</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div id="loading" class="loading">データをスクレイピング中です</div>
+            
+            <div class="results-area">
+                {% if results %}
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for header in headers %}
+                                    <th>{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                                <tr>
+                                    {% for cell in row %}
+                                        <td>{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>まだデータがありません。スクレイピングを開始してください。</p>
+                {% endif %}
+            </div>
+            
+            {% if results %}
+                <form method="post" action="{% url 'scraper:export_csv' %}">
+                    {% csrf_token %}
+                    <button type="submit">CSVエクスポート</button>
+                </form>
+            {% endif %}
+        </div>
+        
+        <!-- 右パネル: 保存したデータと履歴 -->
+        <div class="panel">
+            <h2>保存されたデータ</h2>
+            
+            {% if saved_data %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>名前</th>
+                            <th>日時</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in saved_data %}
+                            <tr>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.created_at }}</td>
+                                <td>
+                                    <a href="{% url 'scraper:load_data' data.id %}">読込</a> |
+                                    <a href="{% url 'scraper:delete_data' data.id %}">削除</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>保存されたデータはありません。</p>
+            {% endif %}
+            
+            {% if results %}
+                <form method="post" action="{% url 'scraper:save_data' %}">
+                    {% csrf_token %}
+                    <label for="save_name">データ名:</label>
+                    <input type="text" id="save_name" name="save_name" required>
+                    <button type="submit">現在のデータを保存</button>
+                </form>
+            {% endif %}
+            
+            <h2>ヘルプ</h2>
+            <div>
+                <p><strong>CSSセレクタとは？</strong></p>
+                <p>CSSセレクタはHTML要素を特定するための記法です。例:</p>
+                <ul>
+                    <li><code>#id</code> - ID属性で要素を選択</li>
+                    <li><code>.class</code> - クラス属性で要素を選択</li>
+                    <li><code>div.class</code> - クラスを持つdiv要素を選択</li>
+                    <li><code>ul li</code> - ul内のすべてのli要素を選択</li>
+                </ul>
+                <p><a href="https://developer.mozilla.org/ja/docs/Web/CSS/CSS_Selectors" target="_blank">詳しく学ぶ</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>© 2025 MaxWell Webscraper - Python、Django、Seleniumで構築</p>
+    </footer>
+    
+    <script>
+        // ログインフィールドの表示/非表示
+        document.getElementById('login_required').addEventListener('change', function() {
+            const loginFields = document.getElementById('login-fields');
+            loginFields.style.display = this.value === 'yes' ? 'block' : 'none';
+        });
+        
+        // ページネーションフィールドの表示/非表示
+        document.getElementById('pagination').addEventListener('change', function() {
+            const paginationFields = document.getElementById('pagination-fields');
+            paginationFields.style.display = this.value === 'yes' ? 'block' : 'none';
+        });
+        
+        // 画像フィールドの表示/非表示
+        document.getElementById('download_images').addEventListener('change', function() {
+            const imageFields = document.getElementById('image-fields');
+            imageFields.style.display = this.value === 'yes' ? 'block' : 'none';
+        });
+        
+        // フォーム送信時のローディング表示
+        document.getElementById('scraper-form').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+        });
+        
+        // セレクタテスト機能
+        document.getElementById('test-selector').addEventListener('click', function() {
+            const url = document.getElementById('url').value;
+            const selector = document.getElementById('selector').value;
+            const resultArea = document.getElementById('selector-test-result');
+            
+            if (!url || !selector) {
+                resultArea.textContent = 'URLとセレクタの両方を入力してください';
+                resultArea.style.display = 'block';
+                return;
+            }
+            
+            resultArea.textContent = 'テスト中...';
+            resultArea.style.display = 'block';
+            
+            fetch('{% url "scraper:test_selector" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `url=${encodeURIComponent(url)}&selector=${encodeURIComponent(selector)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultArea.innerHTML = `<strong>マッチした要素: ${data.count}個</strong><br><pre>${data.html}</pre>`;
+                } else {
+                    resultArea.textContent = `エラー: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                resultArea.textContent = `エラーが発生しました: ${error}`;
+            });
+        });
+    </script>
+</body>
+</html> 
